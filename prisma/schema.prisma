@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int        @id @default(autoincrement())
+  profilePic String
+  username   String     @unique
+  email      String     @unique
+  password   String
+  reviews    Review[]
+  favorites  Favorite[]
+  like       Like?
+  dislike    Dislike?
+}
+
+model Favorite {
+  id     Int     @id @default(autoincrement())
+  movies Movie[]
+  user   User?   @relation(fields: [userId], references: [id])
+  userId Int?
+}
+
+model Movie {
+  id         Int       @id @default(autoincrement())
+  title      String
+  rating     Int
+  favorite   Favorite? @relation(fields: [favoriteId], references: [id])
+  favoriteId Int?
+  reviews    Review[]
+}
+
+model Review {
+  id       Int       @id @default(autoincrement())
+  comment  String
+  user     User      @relation(fields: [userId], references: [id])
+  userId   Int
+  movie    Movie?    @relation(fields: [movieId], references: [id])
+  movieId  Int?
+  likes    Like[]
+  dislikes Dislike[]
+}
+
+model Like {
+  id Int @id @default(autoincrement())
+
+  review   Review @relation(fields: [reviewId], references: [id])
+  reviewId Int
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int    @unique
+}
+
+model Dislike {
+  id Int @id @default(autoincrement())
+
+  review   Review @relation(fields: [reviewId], references: [id])
+  reviewId Int
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int    @unique
+}
