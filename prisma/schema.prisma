@@ -11,15 +11,14 @@ datasource db {
 }
 
 model User {
-  id         Int        @id @default(autoincrement())
-  profilePic String
-  username   String     @unique
-  email      String     @unique
-  password   String
-  reviews    Review[]
-  favorites  Favorite[]
-  like       Like?
-  dislike    Dislike?
+  id          Int          @id @default(autoincrement())
+  profilePic  String
+  username    String       @unique
+  email       String       @unique
+  password    String
+  reviews     Review[]
+  favorites   Favorite[]
+  likeDislike LikeDislike?
 }
 
 model Favorite {
@@ -39,30 +38,21 @@ model Movie {
 }
 
 model Review {
-  id       Int       @id @default(autoincrement())
-  comment  String
-  user     User      @relation(fields: [userId], references: [id])
-  userId   Int
-  movie    Movie?    @relation(fields: [movieId], references: [id])
-  movieId  Int?
-  likes    Like[]
-  dislikes Dislike[]
+  id          Int           @id @default(autoincrement())
+  comment     String
+  user        User          @relation(fields: [userId], references: [id])
+  userId      Int
+  movie       Movie?        @relation(fields: [movieId], references: [id])
+  movieId     Int?
+  likeDislike LikeDislike[]
 }
 
-model Like {
-  id Int @id @default(autoincrement())
-
-  review   Review @relation(fields: [reviewId], references: [id])
+model LikeDislike {
+  id       Int     @id @default(autoincrement())
+  like     Boolean
+  dislike  Boolean
+  review   Review  @relation(fields: [reviewId], references: [id])
   reviewId Int
-  user     User   @relation(fields: [userId], references: [id])
-  userId   Int    @unique
-}
-
-model Dislike {
-  id Int @id @default(autoincrement())
-
-  review   Review @relation(fields: [reviewId], references: [id])
-  reviewId Int
-  user     User   @relation(fields: [userId], references: [id])
-  userId   Int    @unique
+  user     User    @relation(fields: [userId], references: [id])
+  userId   Int     @unique
 }
