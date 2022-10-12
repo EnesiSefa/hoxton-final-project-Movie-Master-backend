@@ -18,6 +18,12 @@ CREATE TABLE "Favorite" (
 CREATE TABLE "Movie" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "title" TEXT NOT NULL,
+    "thumbnail" TEXT NOT NULL,
+    "video" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "duration" INTEGER NOT NULL,
+    "year" INTEGER NOT NULL,
+    "genre" TEXT NOT NULL,
     "rating" INTEGER NOT NULL,
     "favoriteId" INTEGER,
     CONSTRAINT "Movie_favoriteId_fkey" FOREIGN KEY ("favoriteId") REFERENCES "Favorite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
@@ -34,23 +40,14 @@ CREATE TABLE "Review" (
 );
 
 -- CreateTable
-CREATE TABLE "Like" (
+CREATE TABLE "LikeDislike" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "like" BOOLEAN NOT NULL,
-    "reviewId" INTEGER NOT NULL,
-    "userId" INTEGER NOT NULL,
-    CONSTRAINT "Like_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "Review" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Like_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Dislike" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "dislike" BOOLEAN NOT NULL,
     "reviewId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
-    CONSTRAINT "Dislike_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "Review" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Dislike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "LikeDislike_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "Review" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "LikeDislike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -60,7 +57,4 @@ CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Like_userId_key" ON "Like"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Dislike_userId_key" ON "Dislike"("userId");
+CREATE UNIQUE INDEX "LikeDislike_userId_key" ON "LikeDislike"("userId");

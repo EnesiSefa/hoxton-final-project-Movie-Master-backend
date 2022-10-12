@@ -29,12 +29,18 @@ model Favorite {
 }
 
 model Movie {
-  id         Int       @id @default(autoincrement())
-  title      String
-  rating     Int
-  favorite   Favorite? @relation(fields: [favoriteId], references: [id])
-  favoriteId Int?
-  reviews    Review[]
+  id          Int       @id @default(autoincrement())
+  title       String
+  thumbnail   String
+  video       String
+  description String
+  duration    Int
+  year        Int
+  genre       String
+  rating      Int
+  favorite    Favorite? @relation(fields: [favoriteId], references: [id])
+  favoriteId  Int?
+  reviews     Review[]
 }
 
 model Review {

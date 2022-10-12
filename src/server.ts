@@ -8,6 +8,7 @@ app.use(cors());
 app.options("*", cors());
 app.use(express.json());
 import dotenv from "dotenv";
+const port = 4007;
 
 dotenv.config();
 const SECRET = process.env.SECRET!;
@@ -18,20 +19,17 @@ function generateToken(id: number) {
   return jwt.sign({ id }, SECRET);
 }
 
-
-
 async function getCurrentUser(token: string) {
-  const decodedData = jwt.verify(token, SECRET);
+  const result = jwt.verify(token, SECRET);
 
   const user = await prisma.user.findUnique({
     //@ts-ignore
-    where: { id: decodedData.id },
-    include: { favorites: true, reviews: true },
+    where: { id: result.id },
+    include: { favorites: true, reviews: true, likeDislike: true },
   });
   return user;
 }
 
-const port = 4007;
 app.get("/users", async (req, res) => {
   const users = await prisma.user.findMany({
     include: { favorites: true, reviews: true, likeDislike: true },
@@ -78,11 +76,11 @@ app.post("/sign-in", async (req, res) => {
       res.status(400).send({ errors });
       return;
     }
-    const findUser = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: req.body.email },
     });
-    if (findUser && bcrypt.compareSync(req.body.password, findUser.password)) {
-      res.send({ findUser, token: generateToken(findUser.id) });
+    if (user && bcrypt.compareSync(req.body.password, user.password)) {
+      res.send({ user: user, token: generateToken(user.id) });
     } else {
       res.status(400).send({
         errors: ["Email/Password is not correct"],
@@ -109,6 +107,44 @@ app.delete("/user/:id", async (req, res) => {
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
+  }
+});
+app.get("/movies", async (req, res) => {
+  const movies = await prisma.movie.findMany();
+  res.send(movies);
+});
+app.get("/movie/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const movie = await prisma.movie.findUnique({
+      where: { id: id },
+      include: { reviews: true, favorite: true },
+    });
+    res.send(movie);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+app.post("/movie", async (req, res) => {
+  try {
+    const movie = await prisma.movie.create({
+      data: {
+        title: req.body.title,
+        thumbnail: req.body.thumbnail,
+        video: req.body.video,
+        description: req.body.description,
+        duration: req.body.duration,
+        year: req.body.year,
+        genre: req.body.genre,
+        rating: req.body.rating,
+      },
+    });
+
+    res.send(movie);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
   }
 });
 
