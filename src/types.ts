@@ -18,6 +18,7 @@ type Movie = {
   favoriteId?: number;
   reviews?: Review[];
 };
+
 type Favorite = {
   id: number;
   movies?: Movie[];
