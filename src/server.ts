@@ -148,6 +148,16 @@ app.post("/movie", async (req, res) => {
   }
 });
 
+// app.post("/review", async (req, res) => {
+//   try {
+//     const review = await prisma.review.create({data:{user:{connect:{id:req.}}})
+//   } catch (error) {
+    
+//   }
+
+// });
+
+
 app.get("/validate", async (req, res) => {
   try {
     const token = req.headers.authorization;
