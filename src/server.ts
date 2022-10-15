@@ -109,8 +109,18 @@ app.delete("/user/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
-app.get("/movies", async (req, res) => {
-  const movies = await prisma.movie.findMany();
+app.get("/movies/:pagenr", async (req, res) => {
+  const perPage = Number(req.query.perPage);
+  const page = Number(req.params.pagenr);
+
+  let nrToSkip;
+  nrToSkip = (page - 1) * perPage;
+  nrToSkip = (page - 1) * 20;
+
+  const movies = await prisma.movie.findMany({
+    skip: nrToSkip,
+    take: 8,
+  });
   res.send(movies);
 });
 app.get("/movie/:id", async (req, res) => {
@@ -148,15 +158,26 @@ app.post("/movie", async (req, res) => {
   }
 });
 
-// app.post("/review", async (req, res) => {
-//   try {
-//     const review = await prisma.review.create({data:{user:{connect:{id:req.}}})
-//   } catch (error) {
-    
-//   }
+app.post("/addReviewToMovie", async (req, res) => {
+  const movieId = req.body.movieId;
+  const userId = req.body.userId;
+  const reviewComment = req.body.comment;
+  console.log(movieId, userId, reviewComment);
 
-// });
+  const review = await prisma.review.create({
+    data: { movieId, userId, comment: reviewComment },
+  });
 
+  res.send(review);
+});
+
+app.delete("/deleteReview/:id", async (req, res) => {
+  const review = await prisma.review.delete({
+    where: { id: Number(req.params.id) },
+  });
+
+  res.send(review);
+});
 
 app.get("/validate", async (req, res) => {
   try {
