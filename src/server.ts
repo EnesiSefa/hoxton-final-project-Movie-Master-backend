@@ -109,6 +109,12 @@ app.delete("/user/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
+app.get("/movies", async (req, res) => {
+  const movies = await prisma.movie.findMany({
+    include: { reviews: true, favorite: true },
+  });
+  res.send(movies);
+});
 app.get("/movies/:pagenr", async (req, res) => {
   const perPage = Number(req.query.perPage);
   const page = Number(req.params.pagenr);
@@ -128,7 +134,7 @@ app.get("/movie/:id", async (req, res) => {
     const id = Number(req.params.id);
     const movie = await prisma.movie.findUnique({
       where: { id: id },
-      include: { reviews: true, favorite: true },
+      include: { reviews:true, favorite: true },
     });
     res.send(movie);
   } catch (error) {
@@ -206,6 +212,24 @@ app.get("/favorites", async (req, res) => {
     include: { movies: true },
   });
   res.send(favorites);
+});
+
+app.get("/reviews", async (req, res) => {
+  const reviews = await prisma.review.findMany({ include: { user: true } });
+  res.send(reviews);
+});
+
+
+app.get("/findUserFromReview/:id", async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(req.params.id) },
+    });
+    res.send(user);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
 });
 
 app.get("/validate", async (req, res) => {
