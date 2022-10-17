@@ -8,7 +8,7 @@ app.use(cors());
 app.options("*", cors());
 app.use(express.json());
 import dotenv from "dotenv";
-const port = 4007;
+const port = 4008;
 
 dotenv.config();
 const SECRET = process.env.SECRET!;
@@ -159,16 +159,21 @@ app.post("/movie", async (req, res) => {
 });
 
 app.post("/addReviewToMovie", async (req, res) => {
-  const movieId = req.body.movieId;
-  const userId = req.body.userId;
-  const reviewComment = req.body.comment;
-  console.log(movieId, userId, reviewComment);
+  try {
+    const movieId = req.body.movieId;
+    const userId = req.body.userId;
+    const reviewComment = req.body.comment;
+    console.log(movieId, userId, reviewComment);
 
-  const review = await prisma.review.create({
-    data: { movieId, userId, comment: reviewComment },
-  });
+    const review = await prisma.review.create({
+      data: { movieId, userId, comment: reviewComment },
+    });
 
-  res.send(review);
+    res.send(review);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
 });
 
 app.delete("/deleteReview/:id", async (req, res) => {
@@ -179,6 +184,29 @@ app.delete("/deleteReview/:id", async (req, res) => {
   res.send(review);
 });
 
+app.post("/addMovieToFavorite", async (req, res) => {
+  try {
+    const movieId = req.body.movieId;
+    const userId = req.body.userId;
+    const favorite = await prisma.favorite.create({
+      data: {
+        movies: { connect: { id: movieId } },
+        user: { connect: { id: userId } },
+      },
+    });
+    res.send(favorite);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+
+app.get("/favorites", async (req, res) => {
+  const favorites = await prisma.favorite.findMany({
+    include: { movies: true },
+  });
+  res.send(favorites);
+});
 
 app.get("/validate", async (req, res) => {
   try {
