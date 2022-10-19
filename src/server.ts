@@ -8,7 +8,7 @@ app.use(cors());
 app.options("*", cors());
 app.use(express.json());
 import dotenv from "dotenv";
-const port = 4008;
+const port = 4009;
 
 dotenv.config();
 const SECRET = process.env.SECRET!;
@@ -111,7 +111,7 @@ app.delete("/user/:id", async (req, res) => {
 });
 app.get("/movies", async (req, res) => {
   const movies = await prisma.movie.findMany({
-    include: { reviews: true, favorite: true },
+    include: { reviews: { include: { user: true } }, favorite: true },
   });
   res.send(movies);
 });
@@ -134,7 +134,7 @@ app.get("/movie/:id", async (req, res) => {
     const id = Number(req.params.id);
     const movie = await prisma.movie.findUnique({
       where: { id: id },
-      include: { reviews:true, favorite: true },
+      include: { reviews: { include: { user: true } }, favorite: true },
     });
     res.send(movie);
   } catch (error) {
@@ -157,6 +157,19 @@ app.post("/movie", async (req, res) => {
       },
     });
 
+    res.send(movie);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+
+app.delete("/movie/:id", async (req, res) => {
+  try {
+    const movie = await prisma.movie.delete({
+      where: { id: Number(req.params.id) },
+      include: { reviews: true, favorite: true },
+    });
     res.send(movie);
   } catch (error) {
     //@ts-ignore
@@ -218,7 +231,6 @@ app.get("/reviews", async (req, res) => {
   const reviews = await prisma.review.findMany({ include: { user: true } });
   res.send(reviews);
 });
-
 
 app.get("/findUserFromReview/:id", async (req, res) => {
   try {
