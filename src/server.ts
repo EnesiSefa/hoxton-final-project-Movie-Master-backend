@@ -3,11 +3,14 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { User } from "@prisma/client";
+
 const app = express();
 app.use(cors());
 app.options("*", cors());
 app.use(express.json());
 import dotenv from "dotenv";
+import { Server } from "socket.io";
 const port = 4009;
 
 dotenv.config();
@@ -97,7 +100,12 @@ app.delete("/user/:id", async (req, res) => {
   try {
     const deleteUser = await prisma.user.delete({
       where: { id },
-      include: { favorites: true, reviews: true, likeDislike: true },
+      include: {
+        favorites: true,
+        reviews: true,
+        likeDislike: true,
+        messages: true,
+      },
     });
     if (deleteUser) {
       res.send(deleteUser);
@@ -232,17 +240,65 @@ app.get("/reviews", async (req, res) => {
   res.send(reviews);
 });
 
-app.get("/findUserFromReview/:id", async (req, res) => {
+// app.get("/findUserFromReview/:id", async (req, res) => {
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: { id: Number(req.params.id) },
+//     });
+//     res.send(user);
+//   } catch (error) {
+//     //@ts-ignore
+//     res.status(400).send({ errors: [error.message] });
+//   }
+// });
+app.get("/messages", async (req, res) => {
+  const messages = prisma.message.findMany({include:{user:true}});
+  res.send(messages);
+});
+
+app.post("/message", async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: Number(req.params.id) },
+    const userId = req.body.userId;
+   
+    const content = req.body.content;
+    const message = await prisma.message.create({
+      data: {
+        content,
+        user: { connect: { id: userId } },
+      },
+      
     });
-    res.send(user);
+    res.send(message);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
   }
 });
+
+// const io = new Server(4555, {
+//   cors: {
+//     origin: "*",
+//     methods: ["GET", "POST"],
+//   },
+// });
+
+// const messages: Message[] = [];
+
+// type Message = {
+//   content: string;
+//   user: User & { friends: User[] };
+// };
+
+// //initializing the socket io connection
+// io.on("connection", (socket) => {
+//   //for a new user joining the chat
+//   socket.emit("message", messages);
+//   socket.on("message", (message: Message) => {
+//     messages.push(message);
+//     console.log(messages)
+//     socket.broadcast.emit("message", messages);
+//   });
+// });
 
 app.get("/validate", async (req, res) => {
   try {

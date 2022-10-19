@@ -6,10 +6,30 @@ type User = {
   password: string;
   reviews?: Review[];
   favorites?: Favorite[];
-  Like?: Like;
-  Dislike?: Dislike;
+  messages: Message[];
+  likeDislike: LikeDislike | null;
+  chats: Chat[];
+  friends: Friendship[];
 };
-
+type Friendship = {
+  id: number;
+  friend: User;
+  friendId: number;
+};
+type Chat = {
+  id: number;
+  messages: Message[];
+  users: User[];
+};
+type Message = {
+  id: number;
+  content: string;
+  date: string;
+  user: User;
+  userId: number;
+  Chat: Chat;
+  chatId: number;
+};
 type Movie = {
   id: number;
   title: string;
@@ -33,20 +53,9 @@ type Review = {
   userId?: number;
   Movie?: Movie;
   movieId?: number;
-  Like?: Like[];
-  Dislike?: Dislike[];
 };
 
-type Like = {
-  id: number;
-  like: boolean;
-  review: Review;
-  reviewId?: number;
-  user?: User;
-  userId?: number;
-};
-
-type Dislike = {
+type LikeDislike = {
   id: number;
   dislike: boolean;
   review: Review;
