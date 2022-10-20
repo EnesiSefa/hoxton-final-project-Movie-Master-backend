@@ -16,7 +16,9 @@ const port = 4009;
 dotenv.config();
 const SECRET = process.env.SECRET!;
 
-const prisma = new PrismaClient({ log: ["error", "info", "query", "warn"] });
+const prisma = new PrismaClient();
+// { log: ["error", "info", "query", "warn"] }
+
 
 function generateToken(id: number) {
   return jwt.sign({ id }, SECRET);
@@ -259,9 +261,10 @@ app.get("/reviews", async (req, res) => {
 //   }
 // });
 app.get("/messages", async (req, res) => {
-  const messages = prisma.message.findMany({
+  const messages = await prisma.message.findMany({
     include: { sender: true, receiver: true },
   });
+  console.log(messages)
   res.send(messages);
 });
 
@@ -269,7 +272,6 @@ app.post("/message", async (req, res) => {
   try {
     const receiverId = req.body.receiverId;
     const senderId = req.body.senderId;
-
     const content = req.body.content;
     const message = await prisma.message.create({
       data: {

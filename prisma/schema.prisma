@@ -11,17 +11,17 @@ datasource db {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  profilePic  String
-  username    String       @unique
-  email       String       @unique
-  password    String
-  reviews     Review[]
-  favorites   Favorite[]
-  likeDislike LikeDislike?
-  friends     Friendship[]
-  sentMessages      Message[]    @relation("sender")
-  receivedMessages    Message[]    @relation("receiver")
+  id               Int          @id @default(autoincrement())
+  profilePic       String
+  username         String       @unique
+  email            String       @unique
+  password         String
+  reviews          Review[]
+  favorites        Favorite[]
+  likeDislike      LikeDislike?
+  friends          Friendship[]
+  sentMessages     Message[]    @relation("sender")
+  receivedMessages Message[]    @relation("receiver")
 }
 
 model Favorite {
@@ -73,7 +73,6 @@ model Message {
   senderId   Int
   receiver   User   @relation("receiver", fields: [receiverId], references: [id])
   receiverId Int
-
 }
 
 model Friendship {
