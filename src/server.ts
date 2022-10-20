@@ -11,14 +11,13 @@ app.options("*", cors());
 app.use(express.json());
 import dotenv from "dotenv";
 import { Server } from "socket.io";
-const port = 4009;
+const port = 4003;
 
 dotenv.config();
 const SECRET = process.env.SECRET!;
 
 const prisma = new PrismaClient();
 // { log: ["error", "info", "query", "warn"] }
-
 
 function generateToken(id: number) {
   return jwt.sign({ id }, SECRET);
@@ -30,7 +29,12 @@ async function getCurrentUser(token: string) {
   const user = await prisma.user.findUnique({
     //@ts-ignore
     where: { id: result.id },
-    include: { favorites: true, reviews: true, likeDislike: true },
+    include: {
+      favorites: true,
+      reviews: true,
+      likeDislike: true,
+      sentMessages: true,
+    },
   });
   return user;
 }
@@ -126,6 +130,25 @@ app.delete("/user/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
+
+app.get("/user/:id", async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(req.params.id) },
+      include: {
+        sentMessages: true,
+        receivedMessages: true,
+        reviews: true,
+        favorites: true,
+      },
+    });
+    res.send(user);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+
 app.get("/movies", async (req, res) => {
   const movies = await prisma.movie.findMany({
     include: { reviews: { include: { user: true } }, favorite: true },
@@ -137,15 +160,24 @@ app.get("/movies/:pagenr", async (req, res) => {
   const page = Number(req.params.pagenr);
 
   let nrToSkip;
-  nrToSkip = (page - 1) * perPage;
-  nrToSkip = (page - 1) * 20;
+  nrToSkip = (page - 1) * 5;
 
   const movies = await prisma.movie.findMany({
     skip: nrToSkip,
-    take: 8,
+    take: 5,
   });
   res.send(movies);
 });
+app.get("/movieCount", async (req, res) => {
+  try {
+    const movies = await prisma.movie.count();
+    res.send({movies});
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+
 app.get("/movie/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -264,7 +296,7 @@ app.get("/messages", async (req, res) => {
   const messages = await prisma.message.findMany({
     include: { sender: true, receiver: true },
   });
-  console.log(messages)
+  console.log(messages);
   res.send(messages);
 });
 
@@ -278,6 +310,7 @@ app.post("/message", async (req, res) => {
         content,
         receiver: { connect: { id: receiverId } },
         sender: { connect: { id: senderId } },
+        timeStamp: new Date(),
       },
     });
     res.send(message);
