@@ -18,9 +18,10 @@ model User {
   password    String
   reviews     Review[]
   favorites   Favorite[]
-  messages    Message[]
   likeDislike LikeDislike?
   friends     Friendship[]
+  sentMessages      Message[]    @relation("sender")
+  receivedMessages    Message[]    @relation("receiver")
 }
 
 model Favorite {
@@ -66,17 +67,17 @@ model LikeDislike {
 }
 
 model Message {
-  id      Int      @id @default(autoincrement())
-  content String
-  user    User     @relation(fields: [userId], references: [id])
-  userId  Int
-  
-}
+  id         Int    @id @default(autoincrement())
+  content    String
+  sender     User   @relation("sender", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User   @relation("receiver", fields: [receiverId], references: [id])
+  receiverId Int
 
+}
 
 model Friendship {
   id       Int  @id @default(autoincrement())
   friend   User @relation(fields: [friendId], references: [id])
   friendId Int
-
 }

@@ -35,7 +35,13 @@ async function getCurrentUser(token: string) {
 
 app.get("/users", async (req, res) => {
   const users = await prisma.user.findMany({
-    include: { favorites: true, reviews: true, likeDislike: true },
+    include: {
+      favorites: true,
+      reviews: true,
+      likeDislike: true,
+      receivedMessages: true,
+      sentMessages: true,
+    },
   });
   res.send(users);
 });
@@ -104,7 +110,8 @@ app.delete("/user/:id", async (req, res) => {
         favorites: true,
         reviews: true,
         likeDislike: true,
-        messages: true,
+        receivedMessages: true,
+        sentMessages: true,
       },
     });
     if (deleteUser) {
@@ -252,21 +259,24 @@ app.get("/reviews", async (req, res) => {
 //   }
 // });
 app.get("/messages", async (req, res) => {
-  const messages = prisma.message.findMany({include:{user:true}});
+  const messages = prisma.message.findMany({
+    include: { sender: true, receiver: true },
+  });
   res.send(messages);
 });
 
 app.post("/message", async (req, res) => {
   try {
-    const userId = req.body.userId;
-   
+    const receiverId = req.body.receiverId;
+    const senderId = req.body.senderId;
+
     const content = req.body.content;
     const message = await prisma.message.create({
       data: {
         content,
-        user: { connect: { id: userId } },
+        receiver: { connect: { id: receiverId } },
+        sender: { connect: { id: senderId } },
       },
-      
     });
     res.send(message);
   } catch (error) {
