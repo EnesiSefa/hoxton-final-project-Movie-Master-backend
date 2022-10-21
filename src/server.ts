@@ -160,18 +160,18 @@ app.get("/movies/:pagenr", async (req, res) => {
   const page = Number(req.params.pagenr);
 
   let nrToSkip;
-  nrToSkip = (page - 1) * 5;
+  nrToSkip = (page - 1) * 8;
 
   const movies = await prisma.movie.findMany({
     skip: nrToSkip,
-    take: 5,
+    take: 8,
   });
   res.send(movies);
 });
 app.get("/movieCount", async (req, res) => {
   try {
     const movies = await prisma.movie.count();
-    res.send({movies});
+    res.send({ movies });
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ error: [error.message] });
@@ -292,12 +292,22 @@ app.get("/reviews", async (req, res) => {
 //     res.status(400).send({ errors: [error.message] });
 //   }
 // });
+
+
 app.get("/messages", async (req, res) => {
   const messages = await prisma.message.findMany({
     include: { sender: true, receiver: true },
   });
   console.log(messages);
   res.send(messages);
+});
+app.delete("/message/:id", async (req, res) => {
+  try {
+    const message = await prisma.message.delete({
+      where: { id: Number(req.params.id) },
+    });
+    res.send(message)
+  } catch (error) {}
 });
 
 app.post("/message", async (req, res) => {
