@@ -32,7 +32,8 @@ async function getCurrentUser(token: string) {
     include: {
       favorites: true,
       reviews: true,
-      likeDislike: true,
+      likes: true,
+      dislikes: true,
       sentMessages: true,
     },
   });
@@ -44,7 +45,8 @@ app.get("/users", async (req, res) => {
     include: {
       favorites: true,
       reviews: true,
-      likeDislike: true,
+      likes: true,
+      dislikes: true,
       receivedMessages: true,
       sentMessages: true,
     },
@@ -115,7 +117,8 @@ app.delete("/user/:id", async (req, res) => {
       include: {
         favorites: true,
         reviews: true,
-        likeDislike: true,
+        likes: true,
+        dislikes: true,
         receivedMessages: true,
         sentMessages: true,
       },
@@ -277,7 +280,9 @@ app.get("/favorites", async (req, res) => {
 });
 
 app.get("/reviews", async (req, res) => {
-  const reviews = await prisma.review.findMany({ include: { user: true } });
+  const reviews = await prisma.review.findMany({
+    include: { user: true, likes: true, dislikes: true },
+  });
   res.send(reviews);
 });
 
@@ -293,7 +298,6 @@ app.get("/reviews", async (req, res) => {
 //   }
 // });
 
-
 app.get("/messages", async (req, res) => {
   const messages = await prisma.message.findMany({
     include: { sender: true, receiver: true },
@@ -306,7 +310,7 @@ app.delete("/message/:id", async (req, res) => {
     const message = await prisma.message.delete({
       where: { id: Number(req.params.id) },
     });
-    res.send(message)
+    res.send(message);
   } catch (error) {}
 });
 
@@ -328,6 +332,42 @@ app.post("/message", async (req, res) => {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
   }
+});
+app.post("/like", async (req, res) => {
+  try {
+    const liking = await prisma.like.create({
+      data: {
+        review: { connect: { id: req.body.reviewId } },
+        user: { connect: { id: req.body.userId } },
+      },
+    });
+    res.send(liking);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+app.post("/dislike", async (req, res) => {
+  try {
+    const disliking = await prisma.dislike.create({
+      data: {
+        review: { connect: { id: req.body.reviewId } },
+        user: { connect: { id: req.body.userId } },
+      },
+    });
+    res.send(disliking);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+app.get("/likes", async (req, res) => {
+  const likes = await prisma.like.findMany();
+  res.send(likes);
+});
+app.get("/dislikes", async (req, res) => {
+  const dislikes = await prisma.dislike.findMany();
+  res.send(dislikes);
 });
 
 // const io = new Server(4555, {
