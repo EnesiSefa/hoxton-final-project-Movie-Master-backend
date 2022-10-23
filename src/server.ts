@@ -151,6 +151,22 @@ app.get("/user/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
+app.patch("/user/:id", async (req, res) => {
+  try {
+    const user = await prisma.user.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: {
+        username: req.body.username,
+        email: req.body.email,
+        profilePic: req.body.profilePic,
+        password: req.body.password,
+      },
+    });
+    res.send(user)
+  } catch (error) {}
+});
 
 app.get("/movies", async (req, res) => {
   const movies = await prisma.movie.findMany({
@@ -362,11 +378,15 @@ app.post("/dislike", async (req, res) => {
   }
 });
 app.get("/likes", async (req, res) => {
-  const likes = await prisma.like.findMany();
+  const likes = await prisma.like.findMany({
+    include: { review: true, user: true },
+  });
   res.send(likes);
 });
 app.get("/dislikes", async (req, res) => {
-  const dislikes = await prisma.dislike.findMany();
+  const dislikes = await prisma.dislike.findMany({
+    include: { review: true, user: true },
+  });
   res.send(dislikes);
 });
 
